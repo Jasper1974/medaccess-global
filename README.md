@@ -2,6 +2,11 @@
 
 重症患者全球用药导航平台（Next.js）。不卖药，做导航。
 
+## 环境要求
+
+- [Git](https://git-scm.com/) 2.x
+- [Node.js](https://nodejs.org/) 18+（推荐 LTS）
+
 ## 本地开发
 
 ```bash
