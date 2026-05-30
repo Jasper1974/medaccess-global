@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #0a1628;
+  --navy-mid: #0f2040;
+  --navy-light: #1a3055;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dim: rgba(201, 168, 76, 0.15);
+  --cream: #f4f1eb;
+  --cream-dim: rgba(244, 241, 235, 0.6);
+  --cream-faint: rgba(244, 241, 235, 0.12);
+  --teal: #2dd4bf;
+  --teal-dim: rgba(45, 212, 191, 0.1);
+  --danger: #e05252;
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-navy-mid: var(--navy-mid);
+  --color-navy-light: var(--navy-light);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-cream: var(--cream);
+  --color-cream-dim: var(--cream-dim);
+  --color-cream-faint: var(--cream-faint);
+  --color-gold-dim: var(--gold-dim);
+  --color-teal: var(--teal);
+  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-cormorant);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--navy);
+  color: var(--cream);
+  font-family: var(--font-dm-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-weight: 300;
+}
+
+::selection {
+  background: var(--gold-dim);
+  color: var(--cream);
+}

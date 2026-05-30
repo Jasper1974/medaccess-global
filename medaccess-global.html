@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedAccess Global | 全球药品及免费临床试验检索数据库</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #0f2040;
+    --navy-light: #1a3055;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --white: #f4f1eb;
+    --white-dim: rgba(244,241,235,0.6);
+    --white-faint: rgba(244,241,235,0.12);
+    --teal: #2dd4bf;
+    --teal-dim: rgba(45,212,191,0.1);
+    --red: #e05252;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--white-faint);
+    background: rgba(10,22,40,0.85);
+    backdrop-filter: blur(20px);
+  }
+
+  .nav-logo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-logo-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--white);
+  }
+
+  .nav-logo-en span {
+    color: var(--gold);
+  }
+
+  .nav-logo-cn {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--white-dim);
+    font-weight: 400;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--white-dim);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .nav-cta:hover {
+    background: var(--gold);
+    color: var(--navy);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 140px 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 50%, rgba(45,212,191,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(15,32,64,0.8) 0%, transparent 80%);
+  }
+
+  /* Grid lines */
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(244,241,235,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(244,241,235,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag-dot {
+    width: 6px; height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.5); }
+  }
+
+  .hero-tag-text {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--teal);
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 7vw, 96px);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    animation: fadeUp 1s ease both;
+  }
+
+  .hero-title .accent {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-subtitle {
+    margin-top: 32px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--white-dim);
+    max-width: 520px;
+    position: relative;
+    z-index: 2;
+    animation: fadeUp 1s ease 0.2s both;
+  }
+
+  .hero-subtitle strong {
+    color: var(--white);
+    font-weight: 400;
+  }
+
+  /* ── SEARCH BOX ── */
+  .search-section {
+    margin-top: 56px;
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    animation: fadeUp 1s ease 0.4s both;
+  }
+
+  .search-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--white-dim);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .search-box {
+    display: flex;
+    border: 1px solid rgba(201,168,76,0.3);
+    background: rgba(10,22,40,0.8);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .search-box:focus-within {
+    border-color: var(--gold);
+  }
+
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 20px 28px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  .search-input::placeholder {
+    color: rgba(244,241,235,0.3);
+  }
+
+  .search-btn {
+    background: var(--gold);
+    border: none;
+    padding: 20px 36px;
+    color: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.3s;
+    white-space: nowrap;
+  }
+
+  .search-btn:hover { background: var(--gold-light); }
+
+  .search-tags {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-tag {
+    padding: 6px 16px;
+    border: 1px solid var(--white-faint);
+    font-size: 12px;
+    color: var(--white-dim);
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.05em;
+  }
+
+  .search-tag:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* ── STATS ── */
+  .stats-bar {
+    position: relative;
+    z-index: 2;
+    margin-top: 80px;
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--white-faint);
+    padding-top: 40px;
+    animation: fadeUp 1s ease 0.6s both;
+  }
+
+  .stat-item {
+    flex: 1;
+    padding-right: 40px;
+    border-right: 1px solid var(--white-faint);
+    margin-right: 40px;
+  }
+
+  .stat-item:last-child {
+    border-right: none;
+    margin-right: 0;
+    padding-right: 0;
+  }
+
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 400;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--white-dim);
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+  }
+
+  /* ── SECTION ── */
+  section {
+    padding: 120px 60px;
+    position: relative;
+  }
+
+  .section-tag {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 300;
+    line-height: 1.1;
+    max-width: 600px;
+  }
+
+  /* ── CHANNELS ── */
+  .channels {
+    background: var(--navy-mid);
+  }
+
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    margin-top: 64px;
+    border: 1px solid var(--white-faint);
+  }
+
+  .channel-card {
+    padding: 48px;
+    background: var(--navy);
+    border: 1px solid transparent;
+    transition: all 0.4s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .channel-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 0;
+    background: var(--gold);
+    transition: height 0.4s;
+  }
+
+  .channel-card:hover::before { height: 100%; }
+
+  .channel-card:hover {
+    background: var(--navy-light);
+  }
+
+  .channel-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--white-faint);
+    letter-spacing: 0.2em;
+    margin-bottom: 24px;
+  }
+
+  .channel-icon {
+    width: 48px; height: 48px;
+    border: 1px solid var(--gold-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    font-size: 20px;
+  }
+
+  .channel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .channel-desc {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--white-dim);
+  }
+
+  .channel-meta {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.1em;
+  }
+
+  .channel-meta::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--teal);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 80px;
+  }
+
+  .step {
+    padding: 48px 32px;
+    background: var(--navy-mid);
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .step:hover { background: var(--navy-light); }
+
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px;
+    font-weight: 300;
+    color: var(--white-faint);
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--white);
+  }
+
+  .step-desc {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--white-dim);
+  }
+
+  /* ── LIVE DATA ── */
+  .live-data {
+    background: var(--navy-mid);
+  }
+
+  .data-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 48px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(45,212,191,0.3);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.15em;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  .trial-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .trial-item {
+    display: grid;
+    grid-template-columns: 120px 1fr auto auto;
+    gap: 24px;
+    align-items: center;
+    padding: 24px 32px;
+    background: var(--navy);
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+
+  .trial-item:hover { background: var(--navy-light); }
+
+  .trial-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  .trial-name {
+    font-size: 14px;
+    color: var(--white);
+  }
+
+  .trial-name span {
+    display: block;
+    font-size: 12px;
+    color: var(--white-dim);
+    margin-top: 4px;
+  }
+
+  .trial-status {
+    font-size: 11px;
+    padding: 4px 12px;
+    letter-spacing: 0.1em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .trial-status.recruiting {
+    background: rgba(45,212,191,0.1);
+    color: var(--teal);
+    border: 1px solid rgba(45,212,191,0.2);
+  }
+
+  .trial-status.free {
+    background: var(--gold-dim);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .trial-arrow {
+    color: var(--white-faint);
+    font-size: 18px;
+    transition: color 0.3s;
+  }
+
+  .trial-item:hover .trial-arrow { color: var(--gold); }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center;
+    padding: 160px 60px;
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+  }
+
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(42px, 5vw, 72px);
+    font-weight: 300;
+    line-height: 1.1;
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: 0 auto 32px;
+  }
+
+  .cta-title .accent { color: var(--gold); font-style: italic; }
+
+  .cta-desc {
+    font-size: 16px;
+    color: var(--white-dim);
+    max-width: 480px;
+    margin: 0 auto 48px;
+    line-height: 1.8;
+    position: relative;
+    z-index: 2;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 18px 48px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid var(--white-faint);
+    padding: 18px 48px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--white-dim);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 60px;
+    border-top: 1px solid var(--white-faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--white-dim);
+  }
+
+  .footer-logo span { color: var(--gold); }
+
+  .footer-note {
+    font-size: 11px;
+    color: rgba(244,241,235,0.3);
+    letter-spacing: 0.1em;
+    max-width: 400px;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 32px;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+    color: rgba(244,241,235,0.3);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover { color: var(--gold); }
+
+  /* ── DISCLAIMER BANNER ── */
+  .disclaimer {
+    background: rgba(201,168,76,0.05);
+    border-top: 1px solid rgba(201,168,76,0.15);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 16px 60px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .disclaimer-icon {
+    color: var(--gold);
+    font-size: 14px;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .disclaimer-text {
+    font-size: 12px;
+    color: var(--white-dim);
+    line-height: 1.6;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── WECHAT FLOAT BUTTON ── */
+  .wechat-float {
+    position: fixed;
+    right: 32px;
+    bottom: 40px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    filter: drop-shadow(0 8px 32px rgba(0,0,0,0.4));
+  }
+
+  .wechat-float-btn {
+    width: 56px;
+    height: 56px;
+    background: #07C160;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+    position: relative;
+  }
+
+  .wechat-float-btn:hover { transform: scale(1.08); }
+
+  .wechat-float-btn svg { width: 28px; height: 28px; fill: white; }
+
+  .wechat-float-label {
+    background: #07C160;
+    color: white;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 5px 10px;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* QR popup */
+  .wechat-popup {
+    position: absolute;
+    right: 70px;
+    bottom: 0;
+    width: 220px;
+    background: var(--navy-mid);
+    border: 1px solid rgba(7,193,96,0.3);
+    padding: 24px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  }
+
+  .wechat-popup.open { display: flex; }
+
+  .wechat-popup-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .wechat-popup-sub {
+    font-size: 11px;
+    color: var(--white-dim);
+    text-align: center;
+    line-height: 1.6;
+    letter-spacing: 0.03em;
+  }
+
+  .wechat-qr {
+    width: 140px;
+    height: 140px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .wechat-qr-placeholder {
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(0deg, #eee 0px, #eee 4px, white 4px, white 8px),
+      repeating-linear-gradient(90deg, #eee 0px, #eee 4px, white 4px, white 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #999;
+    text-align: center;
+    padding: 8px;
+    line-height: 1.4;
+  }
+
+  .wechat-popup-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #07C160;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── WECHAT INLINE CARD ── */
+  .wechat-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 28px 36px;
+    background: rgba(7,193,96,0.06);
+    border: 1px solid rgba(7,193,96,0.2);
+    margin-top: 40px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wechat-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: #07C160;
+  }
+
+  .wechat-card:hover {
+    background: rgba(7,193,96,0.1);
+    border-color: rgba(7,193,96,0.4);
+  }
+
+  .wechat-card-icon {
+    width: 48px; height: 48px;
+    background: #07C160;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wechat-card-icon svg { width: 26px; height: 26px; fill: white; }
+
+  .wechat-card-body { flex: 1; }
+
+  .wechat-card-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .wechat-card-desc {
+    font-size: 13px;
+    color: var(--white-dim);
+    line-height: 1.6;
+  }
+
+  .wechat-card-arrow {
+    font-size: 20px;
+    color: #07C160;
+    flex-shrink: 0;
+  }
+
+  /* ── WECHAT BANNER (after search) ── */
+  .wechat-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 28px;
+    background: rgba(7,193,96,0.07);
+    border: 1px solid rgba(7,193,96,0.2);
+    margin-top: 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .wechat-banner:hover { background: rgba(7,193,96,0.12); }
+
+  .wechat-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .wechat-banner-icon {
+    width: 36px; height: 36px;
+    background: #07C160;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wechat-banner-icon svg { width: 20px; height: 20px; fill: white; }
+
+  .wechat-banner-text {
+    font-size: 13px;
+    color: var(--white);
+  }
+
+  .wechat-banner-text span {
+    display: block;
+    font-size: 11px;
+    color: var(--white-dim);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .wechat-banner-btn {
+    background: #07C160;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+
+  .wechat-banner-btn:hover { background: #06a852; }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 120px 24px 60px; }
+    section { padding: 80px 24px; }
+    .channels-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .stats-bar { flex-wrap: wrap; gap: 32px; }
+    .stat-item { border-right: none; }
+    .trial-item { grid-template-columns: 1fr auto; }
+    .trial-id, .trial-status { display: none; }
+    footer { flex-direction: column; gap: 24px; text-align: center; }
+    .footer-note { display: none; }
+    .cta-buttons { flex-direction: column; align-items: center; }
+    .disclaimer { padding: 16px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-en">Med<span>Access</span> Global</div>
+    <div class="nav-logo-cn">全球药品及免费临床试验检索数据库</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#channels">四大通道</a></li>
+    <li><a href="#trials">临床试验</a></li>
+    <li><a href="#how">使用流程</a></li>
+    <li><a href="#about">关于我们</a></li>
+  </ul>
+  <button class="nav-cta" onclick="toggleWechatPopup()">加企业微信咨询</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-tag">
+    <div class="hero-tag-dot"></div>
+    <span class="hero-tag-text">实时更新 · 全球覆盖 · 专业匹配</span>
+  </div>
+
+  <h1 class="hero-title">
+    当国内无药可用，<br>
+    <span class="accent">全球还有选择</span>
+  </h1>
+
+  <p class="hero-subtitle">
+    整合全球 <strong>50万+临床试验</strong>、四大合规进药通道、慈善赠药项目，
+    帮助重症患者找到国内找不到的药物与治疗机会。
+  </p>
+
+  <div class="search-section">
+    <div class="search-label">// 输入病种或药物名称开始检索</div>
+    <div class="search-box">
+      <input class="search-input" type="text" placeholder="例：肺癌 EGFR突变 / 司美格鲁肽 / 罕见病 庞贝病">
+      <button class="search-btn">开始检索 →</button>
+    </div>
+    <div class="search-tags">
+      <span class="search-tag">肺癌靶向药</span>
+      <span class="search-tag">免费临床试验</span>
+      <span class="search-tag">博鳌通道</span>
+      <span class="search-tag">罕见病</span>
+      <span class="search-tag">慈善赠药</span>
+      <span class="search-tag">港澳药械通</span>
+    </div>
+    <!-- 企业微信引导 banner -->
+    <div class="wechat-banner" onclick="toggleWechatPopup()">
+      <div class="wechat-banner-left">
+        <div class="wechat-banner-icon"><svg viewBox="0 0 24 24"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.328.328 0 0 0 .186-.059l2.114-1.225a.866.866 0 0 1 .689-.072 10.28 10.28 0 0 0 2.63.34c-.23-.617-.358-1.278-.358-1.964 0-3.563 3.285-6.45 7.339-6.45.28 0 .558.017.83.05C15.392 4.695 12.337 2.188 8.69 2.188zm-2.75 3.555c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.068-.478-1.068-1.069 0-.59.478-1.068 1.068-1.068zm5.5 0c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.069-.478-1.069-1.069 0-.59.479-1.068 1.069-1.068zm3.557 4.538c-3.395 0-6.148 2.388-6.148 5.333 0 2.946 2.753 5.334 6.148 5.334.69 0 1.35-.101 1.97-.28a.683.683 0 0 1 .543.056l1.666.966a.26.26 0 0 0 .147.046.233.233 0 0 0 .233-.233c0-.057-.023-.112-.038-.168l-.308-1.167a.467.467 0 0 1 .168-.524C20.289 17.99 21.146 16.6 21.146 15.02c0-2.946-2.753-5.334-6.148-5.334v-.004zm-2.75 2.666c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842zm5.5 0c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842z"/></svg></div>
+        <div class="wechat-banner-text">
+          检索到匹配结果后，加企业微信获取专家一对一协助
+          <span>专科顾问 · 48小时响应 · 全程陪伴</span>
+        </div>
+      </div>
+      <button class="wechat-banner-btn">立即添加 →</button>
+    </div>
+  </div>
+
+
+    <div class="stat-item">
+      <div class="stat-number">50万+</div>
+      <div class="stat-label">全球临床试验<br>实时收录</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">355种</div>
+      <div class="stat-label">博鳌特许药械<br>国内合规可用</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">200+</div>
+      <div class="stat-label">药厂慈善援助<br>项目收录</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">48h</div>
+      <div class="stat-label">专属顾问<br>响应时效</div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <span class="disclaimer-icon">[ 声明 ]</span>
+  <span class="disclaimer-text">
+    本平台提供医疗信息检索与资源匹配服务，不提供诊断意见，不直接销售药品。所有用药建议须经具备资质的医师确认。
+  </span>
+</div>
+
+<!-- CHANNELS -->
+<section class="channels" id="channels">
+  <div class="section-tag">// 四大合规通道</div>
+  <h2 class="section-title reveal">
+    国内买不到的药，<br>合规通道帮你找到
+  </h2>
+
+  <div class="channels-grid reveal">
+    <div class="channel-card">
+      <div class="channel-number">01 / 04</div>
+      <div class="channel-icon">🏥</div>
+      <div class="channel-title">海南博鳌<br>先行区通道</div>
+      <div class="channel-desc">
+        国内尚未上市、全球已获批的创新药械，可通过博鳌乐城先行区特许政策合法使用。审批周期已压缩至10个工作日。
+      </div>
+      <div class="channel-meta">收录355种特许药械</div>
+    </div>
+
+    <div class="channel-card">
+      <div class="channel-number">02 / 04</div>
+      <div class="channel-icon">🔬</div>
+      <div class="channel-title">免费临床<br>试验招募</div>
+      <div class="channel-desc">
+        整合ClinicalTrials.gov、ChiCTR等全球数据库，实时匹配正在招募中的临床试验。符合条件患者可免费使用在研新药。
+      </div>
+      <div class="channel-meta">实时更新 · 今日招募中</div>
+    </div>
+
+    <div class="channel-card">
+      <div class="channel-number">03 / 04</div>
+      <div class="channel-icon">🇭🇰</div>
+      <div class="channel-title">港澳药械通<br>大湾区通道</div>
+      <div class="channel-desc">
+        港澳已上市、内地未上市的药品，通过粤港澳大湾区"药械通"政策，可在指定医疗机构合法获取，最快3-7天到药。
+      </div>
+      <div class="channel-meta">大湾区指定医院可用</div>
+    </div>
+
+    <div class="channel-card">
+      <div class="channel-number">04 / 04</div>
+      <div class="channel-icon">🤝</div>
+      <div class="channel-title">慈善赠药<br>患者援助项目</div>
+      <div class="channel-desc">
+        收录罗氏、阿斯利康、辉瑞、诺华等200+药厂慈善援助项目。大量患者不知道这些免费资源的存在，我们帮你匹配申请。
+      </div>
+      <div class="channel-meta">200+ 援助项目收录</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE TRIALS -->
+<section id="trials" style="padding: 120px 60px; background: var(--navy);">
+  <div class="data-header reveal">
+    <div>
+      <div class="section-tag">// 实时临床试验数据库</div>
+      <h2 class="section-title">今日正在招募<br>的临床试验</h2>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE DATA
+    </div>
+  </div>
+
+  <div class="trial-list reveal">
+    <div class="trial-item">
+      <div class="trial-id">NCT06234521</div>
+      <div class="trial-name">
+        第三代EGFR抑制剂 vs 标准化疗
+        <span>非小细胞肺癌 · III期 · 上海、北京、广州</span>
+      </div>
+      <div class="trial-status free">免费用药</div>
+      <div class="trial-status recruiting">招募中</div>
+      <div class="trial-arrow">→</div>
+    </div>
+
+    <div class="trial-item">
+      <div class="trial-id">ChiCTR2300078421</div>
+      <div class="trial-name">
+        新型PD-1/PD-L1双抗联合化疗
+        <span>胃癌 · II/III期 · 全国22个中心</span>
+      </div>
+      <div class="trial-status free">免费用药</div>
+      <div class="trial-status recruiting">招募中</div>
+      <div class="trial-arrow">→</div>
+    </div>
+
+    <div class="trial-item">
+      <div class="trial-id">NCT06198765</div>
+      <div class="trial-name">
+        罕见病脊髓性肌萎缩 基因治疗研究
+        <span>SMA · I/II期 · 北京协和医院</span>
+      </div>
+      <div class="trial-status free">全程免费</div>
+      <div class="trial-status recruiting">招募中</div>
+      <div class="trial-arrow">→</div>
+    </div>
+
+    <div class="trial-item">
+      <div class="trial-id">ChiCTR2300081234</div>
+      <div class="trial-name">
+        ALK阳性非小细胞肺癌新型靶向药
+        <span>肺癌 · III期 · 广东、江苏、浙江</span>
+      </div>
+      <div class="trial-status free">免费用药</div>
+      <div class="trial-status recruiting">招募中</div>
+      <div class="trial-arrow">→</div>
+    </div>
+
+    <div class="trial-item">
+      <div class="trial-id">NCT06301456</div>
+      <div class="trial-name">
+        HER2阳性乳腺癌新型ADC药物研究
+        <span>乳腺癌 · II期 · 全国15个中心</span>
+      </div>
+      <div class="trial-status free">免费用药</div>
+      <div class="trial-status recruiting">招募中</div>
+      <div class="trial-arrow">→</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px; text-align: center;">
+    <button class="btn-secondary">查看全部临床试验 →</button>
+  </div>
+  <!-- 临床试验区企业微信引导 -->
+  <div class="wechat-card reveal" onclick="toggleWechatPopup()" style="max-width:720px; margin: 32px auto 0;">
+    <div class="wechat-card-icon"><svg viewBox="0 0 24 24"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.328.328 0 0 0 .186-.059l2.114-1.225a.866.866 0 0 1 .689-.072 10.28 10.28 0 0 0 2.63.34c-.23-.617-.358-1.278-.358-1.964 0-3.563 3.285-6.45 7.339-6.45.28 0 .558.017.83.05C15.392 4.695 12.337 2.188 8.69 2.188zm-2.75 3.555c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.068-.478-1.068-1.069 0-.59.478-1.068 1.068-1.068zm5.5 0c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.069-.478-1.069-1.069 0-.59.479-1.068 1.069-1.068zm3.557 4.538c-3.395 0-6.148 2.388-6.148 5.333 0 2.946 2.753 5.334 6.148 5.334.69 0 1.35-.101 1.97-.28a.683.683 0 0 1 .543.056l1.666.966a.26.26 0 0 0 .147.046.233.233 0 0 0 .233-.233c0-.057-.023-.112-.038-.168l-.308-1.167a.467.467 0 0 1 .168-.524C20.289 17.99 21.146 16.6 21.146 15.02c0-2.946-2.753-5.334-6.148-5.334v-.004zm-2.75 2.666c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842zm5.5 0c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842z"/></svg></div>
+    <div class="wechat-card-body">
+      <div class="wechat-card-title">找到符合条件的临床试验？</div>
+      <div class="wechat-card-desc">加企业微信，专科顾问帮您核实入组资格、协助完成申请，全程陪伴。首次匹配核实完全免费。</div>
+    </div>
+    <div class="wechat-card-arrow">→</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background: var(--navy-mid); padding: 120px 60px;">
+  <div class="section-tag reveal">// 使用流程</div>
+  <h2 class="section-title reveal">四步找到<br>你需要的药</h2>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">输入病情</div>
+      <div class="step-desc">告诉我们病种、分期、基因检测结果，AI在3分钟内完成结构化分析</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">获取匹配报告</div>
+      <div class="step-desc">系统从50万+数据库中，为您精准匹配当前可用的全球药物与临床试验</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">专家医生确认</div>
+      <div class="step-desc">专科顾问医生在48小时内审核报告，给出专业用药路径建议</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-title">全程协助履约</div>
+      <div class="step-desc">从申请材料到通道对接，我们陪伴患者走完每一个步骤</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <h2 class="cta-title reveal">
+    现在开始，<br>找到<span class="accent">属于你的选项</span>
+  </h2>
+  <p class="cta-desc reveal">
+    每天有新的临床试验开始招募，每天有新的药物通过合规通道可及。
+    不要因为信息差，错过本可以得到的机会。
+  </p>
+  <div class="cta-buttons reveal">
+    <button class="btn-primary">免费检索匹配</button>
+    <button class="btn-secondary" onclick="toggleWechatPopup()" style="display:inline-flex;align-items:center;gap:10px;"><span style='display:inline-flex;align-items:center;width:18px;height:18px;fill:#f4f1eb;'><svg viewBox="0 0 24 24"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.328.328 0 0 0 .186-.059l2.114-1.225a.866.866 0 0 1 .689-.072 10.28 10.28 0 0 0 2.63.34c-.23-.617-.358-1.278-.358-1.964 0-3.563 3.285-6.45 7.339-6.45.28 0 .558.017.83.05C15.392 4.695 12.337 2.188 8.69 2.188zm-2.75 3.555c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.068-.478-1.068-1.069 0-.59.478-1.068 1.068-1.068zm5.5 0c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.069-.478-1.069-1.069 0-.59.479-1.068 1.069-1.068zm3.557 4.538c-3.395 0-6.148 2.388-6.148 5.333 0 2.946 2.753 5.334 6.148 5.334.69 0 1.35-.101 1.97-.28a.683.683 0 0 1 .543.056l1.666.966a.26.26 0 0 0 .147.046.233.233 0 0 0 .233-.233c0-.057-.023-.112-.038-.168l-.308-1.167a.467.467 0 0 1 .168-.524C20.289 17.99 21.146 16.6 21.146 15.02c0-2.946-2.753-5.334-6.148-5.334v-.004zm-2.75 2.666c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842zm5.5 0c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842z"/></svg></span>加企业微信咨询</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Med<span>Access</span> Global</div>
+  <div class="footer-note">
+    本平台提供医疗信息检索服务，不构成诊疗建议，不直接参与药品销售。
+    所有信息仅供参考，具体诊疗方案请遵医嘱。
+  </div>
+  <div class="footer-links">
+    <a href="#">使用条款</a>
+    <a href="#">隐私政策</a>
+    <a href="#">免责声明</a>
+    <a href="#">联系我们</a>
+  </div>
+</footer>
+
+
+<!-- 悬浮企业微信按钮 -->
+<div class="wechat-float">
+  <div class="wechat-popup" id="wechatPopup">
+    <div class="wechat-popup-tag">// 企业微信</div>
+    <div class="wechat-popup-title">扫码添加专属顾问</div>
+    <div class="wechat-qr">
+      <div class="wechat-qr-placeholder">请替换为<br>企业微信<br>二维码</div>
+    </div>
+    <div class="wechat-popup-sub">
+      添加后发送病情描述<br>AI+专科医生48小时内响应
+    </div>
+    <div style="display:flex;gap:8px;width:100%;">
+      <div style="flex:1;text-align:center;padding:8px;background:rgba(7,193,96,0.1);border:1px solid rgba(7,193,96,0.2);">
+        <div style="font-size:10px;color:#07C160;font-family:'DM Mono',monospace;letter-spacing:0.1em;">免费</div>
+        <div style="font-size:11px;color:var(--white-dim);margin-top:2px;">首次匹配</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:8px;background:rgba(7,193,96,0.1);border:1px solid rgba(7,193,96,0.2);">
+        <div style="font-size:10px;color:#07C160;font-family:'DM Mono',monospace;letter-spacing:0.1em;">48H</div>
+        <div style="font-size:11px;color:var(--white-dim);margin-top:2px;">响应时效</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:8px;background:rgba(7,193,96,0.1);border:1px solid rgba(7,193,96,0.2);">
+        <div style="font-size:10px;color:#07C160;font-family:'DM Mono',monospace;letter-spacing:0.1em;">全程</div>
+        <div style="font-size:11px;color:var(--white-dim);margin-top:2px;">专人陪伴</div>
+      </div>
+    </div>
+  </div>
+  <button class="wechat-float-btn" onclick="toggleWechatPopup()" title="添加企业微信">
+    <svg viewBox="0 0 24 24"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.328.328 0 0 0 .186-.059l2.114-1.225a.866.866 0 0 1 .689-.072 10.28 10.28 0 0 0 2.63.34c-.23-.617-.358-1.278-.358-1.964 0-3.563 3.285-6.45 7.339-6.45.28 0 .558.017.83.05C15.392 4.695 12.337 2.188 8.69 2.188zm-2.75 3.555c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.068-.478-1.068-1.069 0-.59.478-1.068 1.068-1.068zm5.5 0c.59 0 1.068.478 1.068 1.068 0 .59-.478 1.069-1.068 1.069-.59 0-1.069-.478-1.069-1.069 0-.59.479-1.068 1.069-1.068zm3.557 4.538c-3.395 0-6.148 2.388-6.148 5.333 0 2.946 2.753 5.334 6.148 5.334.69 0 1.35-.101 1.97-.28a.683.683 0 0 1 .543.056l1.666.966a.26.26 0 0 0 .147.046.233.233 0 0 0 .233-.233c0-.057-.023-.112-.038-.168l-.308-1.167a.467.467 0 0 1 .168-.524C20.289 17.99 21.146 16.6 21.146 15.02c0-2.946-2.753-5.334-6.148-5.334v-.004zm-2.75 2.666c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842zm5.5 0c.465 0 .842.377.842.842 0 .465-.377.841-.842.841a.841.841 0 0 1-.841-.841c0-.465.376-.842.841-.842z"/></svg>
+  </button>
+  <div class="wechat-float-label">专家咨询</div>
+</div>
+<script>
+  function toggleWechatPopup() {
+    const popup = document.getElementById('wechatPopup');
+    popup.classList.toggle('open');
+  }
+  // 点击外部关闭
+  document.addEventListener('click', function(e) {
+    const popup = document.getElementById('wechatPopup');
+    const floatBtn = document.querySelector('.wechat-float');
+    if (popup && popup.classList.contains('open') && !floatBtn.contains(e.target)) {
+      popup.classList.remove('open');
+    }
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Search interaction
+  document.querySelectorAll('.search-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      document.querySelector('.search-input').value = tag.textContent;
+    });
+  });
+
+  // Counter animation
+  function animateCounter(el, target, suffix) {
+    let start = 0;
+    const duration = 2000;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        el.textContent = target.toLocaleString() + suffix;
+        clearInterval(timer);
+      } else {
+        el.textContent = Math.floor(start).toLocaleString() + suffix;
+      }
+    }, 16);
+  }
+</script>
+</body>
+</html>
