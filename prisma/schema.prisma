@@ -14,6 +14,8 @@ model ClinicalTrial {
   sourceId           String    @unique
   title              String
   titleCn            String?
+  summaryCn          String?
+  eligibilityCn      String?
   diseaseSlugs       String[]
   diseaseLabel       String
   phase              String
@@ -47,4 +49,75 @@ model Report {
   reviewedAt            DateTime?
   sentToUserAt          DateTime?
   createdAt             DateTime  @default(now())
+}
+
+model CharityProgram {
+  id                 String   @id @default(cuid())
+  source             String
+  sourceId           String   @unique
+  drugName           String
+  company            String
+  indication         String
+  diseaseLabel       String
+  diseaseSlugs       String[]
+  benefit            String
+  status             String
+  summary            String   @default("")
+  eligibility        String   @default("")
+  applicationProcess String   @default("")
+  officialUrl        String?
+  contactInfo        String   @default("")
+  crawledAt          DateTime
+  syncedAt           DateTime @updatedAt
+  createdAt          DateTime @default(now())
+
+  @@index([status])
+}
+
+model BoaoCatalogItem {
+  id              String   @id @default(cuid())
+  source          String
+  sourceId        String   @unique
+  name            String
+  nameEn          String?
+  productType     String
+  indication      String
+  diseaseLabel    String
+  diseaseSlugs    String[]
+  manufacturer    String?
+  originRegion    String?
+  status          String
+  summary         String   @default("")
+  usageNote       String   @default("")
+  officialUrl     String?
+  crawledAt       DateTime
+  syncedAt        DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([productType])
+}
+
+model HkmoCatalogItem {
+  id               String   @id @default(cuid())
+  source           String
+  sourceId         String   @unique
+  name             String
+  nameEn           String?
+  productType      String
+  dosageForm       String?
+  indication       String
+  diseaseLabel     String
+  diseaseSlugs     String[]
+  hkmoBatch        String?
+  approvedHospitals  String[]
+  status           String
+  summary          String   @default("")
+  officialUrl      String?
+  crawledAt        DateTime
+  syncedAt         DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  @@index([status])
+  @@index([productType])
 }

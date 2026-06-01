@@ -1,10 +1,12 @@
-import type { MockCharityProgram } from "@/lib/mock/hub-data";
+import Link from "next/link";
+import type { CharityProgramRecord } from "@/types/charity";
 
 interface CharityListProps {
-  programs: MockCharityProgram[];
+  programs: CharityProgramRecord[];
+  diseaseSlug: string;
 }
 
-export function CharityList({ programs }: CharityListProps) {
+export function CharityList({ programs, diseaseSlug }: CharityListProps) {
   if (programs.length === 0) {
     return (
       <div className="border border-cream-faint bg-navy-mid p-8 text-center text-cream-dim">
@@ -16,8 +18,9 @@ export function CharityList({ programs }: CharityListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {programs.map((program) => (
-        <div
+        <Link
           key={program.id}
+          href={`/d/${diseaseSlug}/charity/${program.id}`}
           className="border border-cream-faint bg-navy-mid p-6 transition hover:border-gold"
         >
           <div className="text-xs tracking-widest text-gold">{program.company}</div>
@@ -26,7 +29,7 @@ export function CharityList({ programs }: CharityListProps) {
             <div className="mt-2 text-sm text-cream-dim">{program.indication}</div>
           ) : null}
           <div className="mt-3 text-sm text-cream-dim">援助方案：{program.benefit}</div>
-        </div>
+        </Link>
       ))}
     </div>
   );

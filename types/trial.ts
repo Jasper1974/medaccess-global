@@ -6,6 +6,9 @@ export interface ClinicalTrialRecord {
   sourceId: string;
   source: TrialSource;
   title: string;
+  titleCn?: string;
+  summaryCn?: string;
+  eligibilityCn?: string;
   diseaseSlugs: string[];
   diseaseLabel: string;
   phase: string;

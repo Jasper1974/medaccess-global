@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrowseModeBar } from "@/components/disease/BrowseModeBar";
-import { ChannelCards } from "@/components/hub/ChannelCards";
 import { CharityList } from "@/components/hub/CharityList";
 import { HubTabs } from "@/components/hub/HubTabs";
 import { TrialList } from "@/components/hub/TrialList";
@@ -10,11 +9,9 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { getAccessRules } from "@/lib/access/modes";
 import { getDiseaseBySlug } from "@/lib/diseases/catalog";
-import {
-  filterByDisease,
-  MOCK_CHANNELS,
-  MOCK_CHARITY,
-} from "@/lib/mock/hub-data";
+import { countBoaoByDisease, listBoaoByDisease } from "@/lib/boao";
+import { countCharityByDisease, listCharityByDisease } from "@/lib/charity";
+import { countHkmoByDisease, listHkmoByDisease } from "@/lib/hkmo";
 import { countTrialsByDisease, listTrialsByDisease } from "@/lib/trials";
 import type { HubTab } from "@/types/disease";
 
@@ -25,8 +22,9 @@ interface HubPageProps {
 async function getHubStats(slug: string) {
   return {
     trials: await countTrialsByDisease(slug),
-    charity: filterByDisease(MOCK_CHARITY, slug).length,
-    channels: filterByDisease(MOCK_CHANNELS, slug).length,
+    charity: await countCharityByDisease(slug),
+    boao: await countBoaoByDisease(slug),
+    hkmo: await countHkmoByDisease(slug),
   };
 }
 
@@ -53,6 +51,9 @@ export default async function DiseaseHubPage({ params }: HubPageProps) {
   const rules = getAccessRules("browse");
   const stats = await getHubStats(slug);
   const previewTrials = (await listTrialsByDisease(slug)).slice(0, 3);
+  const previewCharity = (await listCharityByDisease(slug)).slice(0, 4);
+  const previewBoao = (await listBoaoByDisease(slug)).slice(0, 3);
+  const previewHkmo = (await listHkmoByDisease(slug)).slice(0, 3);
   const activeTab: HubTab = "overview";
 
   return (
@@ -80,7 +81,7 @@ export default async function DiseaseHubPage({ params }: HubPageProps) {
             <HubTabs slug={slug} active={activeTab} />
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Link
               href={`/d/${slug}/trials`}
               className="border border-cream-faint bg-navy-mid p-6 transition hover:border-gold"
@@ -96,11 +97,18 @@ export default async function DiseaseHubPage({ params }: HubPageProps) {
               <div className="mt-2 text-cream">慈善赠药项目</div>
             </Link>
             <Link
-              href={`/d/${slug}/channels`}
+              href={`/d/${slug}/boao`}
               className="border border-cream-faint bg-navy-mid p-6 transition hover:border-gold"
             >
-              <div className="font-serif text-3xl text-gold">{stats.channels}</div>
-              <div className="mt-2 text-cream">可用通道类型</div>
+              <div className="font-serif text-3xl text-gold">{stats.boao}</div>
+              <div className="mt-2 text-cream">博鳌乐城药械</div>
+            </Link>
+            <Link
+              href={`/d/${slug}/hkmo`}
+              className="border border-cream-faint bg-navy-mid p-6 transition hover:border-gold"
+            >
+              <div className="font-serif text-3xl text-gold">{stats.hkmo}</div>
+              <div className="mt-2 text-cream">港澳药械通</div>
             </Link>
           </div>
 
@@ -114,14 +122,41 @@ export default async function DiseaseHubPage({ params }: HubPageProps) {
           <section className="mt-12">
             <h2 className="font-serif text-2xl text-cream">慈善赠药项目</h2>
             <div className="mt-6">
-              <CharityList programs={filterByDisease(MOCK_CHARITY, slug)} />
+              <CharityList programs={previewCharity} diseaseSlug={slug} />
             </div>
           </section>
 
           <section className="mt-12">
-            <h2 className="font-serif text-2xl text-cream">可用进药通道</h2>
-            <div className="mt-6">
-              <ChannelCards channels={filterByDisease(MOCK_CHANNELS, slug)} />
+            <h2 className="font-serif text-2xl text-cream">博鳌乐城特许药械</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {previewBoao.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/d/${slug}/boao/${item.id}`}
+                  className="border border-cream-faint bg-navy-mid p-5 transition hover:border-gold"
+                >
+                  <div className="text-xs text-gold">博鳌乐城</div>
+                  <div className="mt-2 text-cream">{item.name}</div>
+                  <div className="mt-1 text-sm text-cream-dim">{item.diseaseLabel}</div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-12">
+            <h2 className="font-serif text-2xl text-cream">港澳药械通目录</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {previewHkmo.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/d/${slug}/hkmo/${item.id}`}
+                  className="border border-cream-faint bg-navy-mid p-5 transition hover:border-gold"
+                >
+                  <div className="text-xs text-gold">{item.hkmoBatch ?? "港澳药械通"}</div>
+                  <div className="mt-2 text-cream">{item.name}</div>
+                  <div className="mt-1 text-sm text-cream-dim">{item.diseaseLabel}</div>
+                </Link>
+              ))}
             </div>
           </section>
         </div>

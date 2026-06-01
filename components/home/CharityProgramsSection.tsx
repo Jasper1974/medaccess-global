@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ChannelIntro } from "@/components/home/ChannelIntro";
-import { MOCK_CHARITY } from "@/lib/mock/hub-data";
+import { listRecentCharity } from "@/lib/charity";
 
-export function CharityProgramsSection() {
+export async function CharityProgramsSection() {
+  const programs = await listRecentCharity(6);
+
   return (
     <section id="charity" className="scroll-mt-28 bg-navy-mid px-6 py-16 md:px-14 md:py-24">
       <div className="mx-auto max-w-6xl">
@@ -11,7 +13,7 @@ export function CharityProgramsSection() {
           icon="🤝"
           title="慈善赠药患者援助项目"
           description="收录罗氏、阿斯利康、辉瑞、诺华等200+药厂慈善援助项目。大量患者不知道这些免费资源的存在，我们帮你匹配申请。"
-          meta="200+ 援助项目收录"
+          meta="药厂 PAP 项目收录"
         />
 
         <div className="mt-10">
@@ -20,10 +22,10 @@ export function CharityProgramsSection() {
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {MOCK_CHARITY.map((program) => (
+          {programs.map((program) => (
             <Link
               key={program.id}
-              href={`/d/${program.diseaseSlugs[0]}/charity`}
+              href={`/d/${program.diseaseSlugs[0]}/charity/${program.id}`}
               className="border border-cream-faint bg-navy p-6 transition hover:border-gold"
             >
               <div className="text-xs tracking-widest text-gold">{program.company}</div>

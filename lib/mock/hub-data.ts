@@ -1,15 +1,5 @@
 import type { ClinicalTrialRecord } from "@/types/trial";
 
-export interface MockCharityProgram {
-  id: string;
-  drugName: string;
-  company: string;
-  indication: string;
-  diseaseSlugs: string[];
-  benefit: string;
-  isActive: boolean;
-}
-
 export interface MockChannelItem {
   id: string;
   channel: "boao" | "trials" | "hkmo" | "charity";
@@ -161,63 +151,6 @@ export const MOCK_TRIALS: ClinicalTrialRecord[] = [
     intervention: "ADC药物 静脉输注",
     sponsor: "国际制药公司",
     contactInfo: "全国多中心联系人见ClinicalTrials.gov",
-  },
-];
-
-export const MOCK_CHARITY: MockCharityProgram[] = [
-  {
-    id: "charity-1",
-    drugName: "奥希替尼患者援助",
-    company: "阿斯利康",
-    indication: "非小细胞肺癌 EGFR突变",
-    diseaseSlugs: ["fei-ai-egfr"],
-    benefit: "买4赠8",
-    isActive: true,
-  },
-  {
-    id: "charity-2",
-    drugName: "诺西那生钠援助",
-    company: "渤健",
-    indication: "脊髓性肌萎缩症（SMA）",
-    diseaseSlugs: ["sma"],
-    benefit: "符合条件免费赠药",
-    isActive: true,
-  },
-  {
-    id: "charity-3",
-    drugName: "曲妥珠单抗慈善项目",
-    company: "罗氏",
-    indication: "HER2阳性乳腺癌",
-    diseaseSlugs: ["ru-xian-her2"],
-    benefit: "买2赠6",
-    isActive: true,
-  },
-  {
-    id: "charity-4",
-    drugName: "帕博利珠单抗援助",
-    company: "默沙东",
-    indication: "多种实体瘤免疫治疗",
-    diseaseSlugs: ["fei-ai-wt", "wei-ai-advanced"],
-    benefit: "买3赠1",
-    isActive: true,
-  },
-  {
-    id: "charity-5",
-    drugName: "伊马替尼患者援助",
-    company: "诺华",
-    indication: "慢性髓系白血病",
-    diseaseSlugs: ["aml"],
-    benefit: "低收入患者免费赠药",
-    isActive: true,
-  },
-  {
-    id: "charity-6",
-    drugName: "阿加糖酶α援助",
-    company: "赛诺菲",
-    indication: "法布雷病",
-    diseaseSlugs: ["fabry"],
-    benefit: "符合条件减免",
-    isActive: true,
   },
 ];
 

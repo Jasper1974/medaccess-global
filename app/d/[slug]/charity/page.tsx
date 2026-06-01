@@ -1,15 +1,22 @@
 import { notFound } from "next/navigation";
-import { BrowseModeBar } from "@/components/disease/BrowseModeBar";
-import { CharityList } from "@/components/hub/CharityList";
-import { HubTabs } from "@/components/hub/HubTabs";
-import { Disclaimer } from "@/components/layout/Disclaimer";
-import { SiteFooter } from "@/components/layout/SiteFooter";
+import { BackLink } from "@/components/ui/BackLink";
+import { CharityTable } from "@/components/charity/CharityTable";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { getDiseaseBySlug } from "@/lib/diseases/catalog";
-import { filterByDisease, MOCK_CHARITY } from "@/lib/mock/hub-data";
+import { listCharityByDisease } from "@/lib/charity";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const { slug } = await params;
+  const disease = getDiseaseBySlug(slug);
+  if (!disease) return { title: "病种未找到" };
+  return {
+    title: `${disease.shortName} 慈善赠药项目 | MedAccess Global`,
+    description: `${disease.name}相关药厂患者援助与慈善赠药项目列表。`,
+  };
 }
 
 export default async function CharityPage({ params }: PageProps) {
@@ -17,35 +24,24 @@ export default async function CharityPage({ params }: PageProps) {
   const disease = getDiseaseBySlug(slug);
   if (!disease) notFound();
 
+  const programs = await listCharityByDisease(slug);
+
   return (
     <>
       <SiteNav diseaseSlug={disease.slug} diseaseName={disease.shortName} />
-      <Disclaimer />
 
-      <main className="px-6 py-12 md:px-14">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="font-serif text-3xl text-cream md:text-4xl">
-            {disease.shortName} · 慈善赠药
-          </h1>
-          <p className="mt-3 text-cream-dim">
-            药厂患者援助项目公开收录，具体申请条件以药厂官方为准。
-          </p>
+      <main className="mx-auto max-w-6xl px-6 py-10 md:px-14 md:py-12">
+        <BackLink href={`/d/${slug}`} label={`返回 ${disease.shortName} 导航`} />
 
-          <div className="mt-8">
-            <BrowseModeBar disease={disease} />
-          </div>
+        <h1 className="mt-6 font-serif text-3xl text-cream md:text-4xl">
+          {disease.shortName} · 慈善赠药
+        </h1>
+        <p className="mt-2 text-sm text-cream-dim">
+          以下为{disease.name}相关药厂患者援助项目公开收录，具体申请条件以药厂官方为准。
+        </p>
 
-          <div className="mt-10">
-            <HubTabs slug={slug} active="charity" />
-          </div>
-
-          <div className="mt-8">
-            <CharityList programs={filterByDisease(MOCK_CHARITY, slug)} />
-          </div>
-        </div>
+        <CharityTable programs={programs} diseaseSlug={slug} />
       </main>
-
-      <SiteFooter />
     </>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ClinicalTrialRecord } from "@/types/trial";
 import { getTrialFilterOptions } from "@/lib/trials";
+import { getTrialDisplayTitle, getTrialSearchText } from "@/lib/trials/display";
 
 interface TrialTableProps {
   trials: ClinicalTrialRecord[];
@@ -93,9 +94,7 @@ export function TrialTable({ trials, diseaseSlug }: TrialTableProps) {
     return trials.filter((trial) => {
       if (keyword) {
         const q = keyword.toLowerCase();
-        const haystack = [trial.sourceId, trial.title, trial.diseaseLabel]
-          .join(" ")
-          .toLowerCase();
+        const haystack = getTrialSearchText(trial).toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       if (source && trial.source !== source) return false;
@@ -406,7 +405,12 @@ export function TrialTable({ trials, diseaseSlug }: TrialTableProps) {
                     {trial.sourceId}
                   </td>
                   <td className="border-b border-r border-cream-faint px-3 py-3 text-cream">
-                    {trial.title}
+                    <div>{getTrialDisplayTitle(trial)}</div>
+                    {trial.titleCn && trial.titleCn !== trial.title ? (
+                      <div className="mt-1 line-clamp-1 text-xs text-cream-dim">
+                        {trial.title}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="border-b border-r border-cream-faint px-3 py-3 text-cream-dim">
                     {trial.diseaseLabel}

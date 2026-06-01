@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ClinicalTrialRecord } from "@/types/trial";
+import { getTrialDisplayTitle } from "@/lib/trials/display";
 import { trialDisplaySubtitle } from "@/lib/mock/hub-data";
 
 interface TrialListProps {
@@ -26,7 +27,7 @@ export function TrialList({ trials, diseaseSlug }: TrialListProps) {
         >
           <div className="font-mono text-xs text-cream-dim">{trial.sourceId}</div>
           <div>
-            <div className="text-cream">{trial.title}</div>
+            <div className="text-cream">{getTrialDisplayTitle(trial)}</div>
             <div className="mt-1 text-sm text-cream-dim">
               {trialDisplaySubtitle(trial)}
             </div>

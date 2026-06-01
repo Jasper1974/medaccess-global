@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChannelIntro } from "@/components/home/ChannelIntro";
+import { getTrialDisplayTitle } from "@/lib/trials/display";
 import { listRecentTrials } from "@/lib/trials";
 
 export async function LiveTrialsSection() {
@@ -37,7 +38,7 @@ export async function LiveTrialsSection() {
             >
               <div className="font-mono text-xs text-cream-dim">{trial.sourceId}</div>
               <div>
-                <div className="text-sm text-cream">{trial.title}</div>
+                <div className="text-sm text-cream">{getTrialDisplayTitle(trial)}</div>
                 <div className="mt-1 text-xs text-cream-dim">
                   {trial.diseaseLabel} · {trial.phase} · {trial.locations.join("、")}
                 </div>

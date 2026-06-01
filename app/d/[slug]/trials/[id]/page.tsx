@@ -1,8 +1,14 @@
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/ui/BackLink";
 import { TrialApplyPanel } from "@/components/trials/TrialApplyPanel";
+import { TrialOriginalText } from "@/components/trials/TrialOriginalText";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { getDiseaseBySlug } from "@/lib/diseases/catalog";
+import {
+  getTrialDisplayEligibility,
+  getTrialDisplaySummary,
+  getTrialDisplayTitle,
+} from "@/lib/trials/display";
 import { getTrialById } from "@/lib/trials";
 import type { ClinicalTrialRecord } from "@/types/trial";
 
@@ -36,8 +42,8 @@ export async function generateMetadata({ params }: PageProps) {
   const disease = getDiseaseBySlug(slug);
   if (!trial || !disease) return { title: "试验未找到" };
   return {
-    title: `${trial.title} | ${disease.shortName} | MedAccess Global`,
-    description: trial.summary,
+    title: `${getTrialDisplayTitle(trial)} | ${disease.shortName} | MedAccess Global`,
+    description: getTrialDisplaySummary(trial),
   };
 }
 
@@ -49,6 +55,10 @@ export default async function TrialDetailPage({ params }: PageProps) {
   if (!disease || !trial || !trial.diseaseSlugs.includes(slug)) {
     notFound();
   }
+
+  const displayTitle = getTrialDisplayTitle(trial);
+  const displaySummary = getTrialDisplaySummary(trial);
+  const displayEligibility = getTrialDisplayEligibility(trial);
 
   return (
     <>
@@ -74,8 +84,11 @@ export default async function TrialDetailPage({ params }: PageProps) {
           </div>
 
           <h1 className="mt-4 font-serif text-2xl leading-snug text-cream md:text-3xl">
-            {trial.title}
+            {displayTitle}
           </h1>
+          {trial.titleCn && trial.titleCn !== trial.title ? (
+            <TrialOriginalText original={trial.title} />
+          ) : null}
 
           <InfoRow label="病种" value={trial.diseaseLabel} />
           <InfoRow label="分期" value={trial.phase} />
@@ -92,12 +105,20 @@ export default async function TrialDetailPage({ params }: PageProps) {
 
           <div className="border-b border-cream-faint py-4">
             <div className="text-xs tracking-widest text-cream-dim">试验简介</div>
-            <p className="mt-2 text-sm leading-relaxed text-cream">{trial.summary}</p>
+            <p className="mt-2 text-sm leading-relaxed text-cream">{displaySummary}</p>
+            {trial.summaryCn && trial.summaryCn !== trial.summary ? (
+              <TrialOriginalText original={trial.summary} />
+            ) : null}
           </div>
 
           <div className="border-b border-cream-faint py-4">
             <div className="text-xs tracking-widest text-cream-dim">入组条件（摘要）</div>
-            <p className="mt-2 text-sm leading-relaxed text-cream-dim">{trial.eligibility}</p>
+            <p className="mt-2 text-sm leading-relaxed text-cream-dim">
+              {displayEligibility}
+            </p>
+            {trial.eligibilityCn && trial.eligibilityCn !== trial.eligibility ? (
+              <TrialOriginalText original={trial.eligibility} />
+            ) : null}
           </div>
 
           <div className="py-4">
